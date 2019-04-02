@@ -48,9 +48,6 @@ public class RedBlackTree {
     public Node rightRotate(Node n){
         Node left = n.getLeft();
         Node left_right = left.getRight();
-        left_right.setParent(n);
-        n.setParent(n.getLeft());
-        n.getLeft().setParent(n.getParent());
 
         left.setRight(n);
         n.setLeft(left_right);
@@ -62,14 +59,17 @@ public class RedBlackTree {
     public Node leftRotate(Node n){
         Node right = n.getRight();
         Node right_left = right.getLeft();
-        right_left.setParent(n);
-        n.setParent(n.getRight());
-        n.getRight().setParent(n.getParent());
 
         right.setLeft(n);
         n.setRight(right_left);
 
         return right;
+    }
+
+    public void swapColors(Node n1, Node n2){
+        boolean aux = n1.isColor();
+        n1.setColor(n2.isColor());
+        n2.setColor(aux);
     }
 
     public boolean insert_T(int key){
@@ -103,83 +103,30 @@ public class RedBlackTree {
             else {
                 return n;
             }   //else
-        }
+        }   //else
 
-        checkRootRedBlackTree(n);
+        // Right child is RED but left child is BLACK or doesn't exist
+        if(isRed(n.getRight()) && !isRed(n.getLeft())){
+            n = leftRotate(n);
+            swapColors(n, n.getLeft());
+        }   //if
+
+        // Child and parent are REDs
+        if(isRed(n.getLeft()) && isRed(n.getLeft().getLeft())){
+            n = rightRotate(n);
+            swapColors(n, n.getRight());
+        }   //if
+
+        // Both childs are RED
+        if(isRed(n.getLeft()) && isRed(n.getRight())){
+            n.setColor(!n.isColor());
+            n.getLeft().setColor(BLACK);
+            n.getRight().setColor(BLACK);
+        }   //if
+
+        root.setColor(BLACK);
+
         return n;
-    }
-
-    // New Node is added as the root of the tree
-    public void checkRootRedBlackTree(Node n) {
-        if (n.getParent() == null)
-            root.setColor(RED);
-        else
-            checkParentBlackRedBlackTree(n);
-    }
-
-    // Parent of new node is black
-    public void checkParentBlackRedBlackTree(Node n){
-        if(n.getParent().isColor() == BLACK)
-            return;
-        else
-            checkParentANDUncle(n);
-    }
-
-    // Parent and uncle of new node are red
-    public void checkParentANDUncle(Node n){
-        Node uncle = getUncle(n);
-        Node grandParent = getGrandParent(n);
-        if(uncle != null && uncle.isColor() == RED){
-            n.getParent().setColor(BLACK);
-            uncle.setColor(BLACK);
-            grandParent.setColor(RED);
-            checkRootRedBlackTree(n);
-        }   //if
-        else
-            checkParentREDUncleBLACKRightChild(n);
-    }
-
-    /* Parent (P) is red but uncle(U) is black, new node (n)
-        is inserted as the right child of P, P is the left child of G*/
-    public void checkParentREDUncleBLACKRightChild(Node n){
-        Node grandParent = getGrandParent(n);
-        if(n == n.getParent().getRight() && n.getParent() == grandParent.getLeft()){
-            leftRotate(n.getParent());
-            n = n.getLeft();
-        }   //if
-        else if(n == n.getParent().getLeft() && n.getParent() == grandParent.getRight()){
-            rightRotate(n.getParent());
-            n = n.getRight();
-        }   //else-if
-        checkParentREDUncleBLACKLeftChild(n);
-    }
-
-    /*Parent (P) is red but uncle(U) is black, new node (n)
-        is inserted as the left child of P, P is the left child of G*/
-    public void checkParentREDUncleBLACKLeftChild(Node n){
-        Node grandParent = getGrandParent(n);
-        if(n == n.getParent().getLeft() && n.getParent() == grandParent.getLeft())
-            rightRotate(grandParent);
-        else if(n == n.getParent().getRight() && n.getParent() == grandParent.getRight()){
-            n.getParent().setColor(BLACK);
-            grandParent.setColor(RED);
-        }   //else-if
-    }
-
-    public Node getGrandParent(Node n){
-        Node grandParent = null;
-        if(n.getParent().getParent() != null)
-            grandParent = n.getParent().getParent();
-        return grandParent;
-    }
-
-    public Node getUncle(Node n){
-        Node uncle = null;
-        if(n.getParent().getLeft() != null && n.getParent().getLeft().getKey() != n.getKey())
-            uncle = n.getParent().getLeft();
-        else if(n.getParent().getRight() != null && n.getParent().getRight().getKey() != n.getKey())
-            uncle = n.getParent().getRight();
-        return uncle;
     }
 
     public Node getRoot() {
