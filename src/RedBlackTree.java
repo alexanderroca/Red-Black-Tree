@@ -104,6 +104,8 @@ public class RedBlackTree {
                 return n;
             }   //else
         }
+
+        checkRootRedBlackTree(n);
         return n;
     }
 
